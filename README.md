@@ -1,1 +1,3 @@
-## awalz-private/tls-diff-testing-public
+## tls-diff-testing
+
+To be published soon ...
