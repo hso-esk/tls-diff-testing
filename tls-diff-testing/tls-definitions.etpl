@@ -1,0 +1,1038 @@
+/*  The definition of TLS messages as given in corresponding RFCs rewritten in
+ *  eTPL, an enhanced version of the TLS Presentation Language (see [1]).
+ *
+ *  Author: Andreas Walz [andreas.walz@hs-offenburg.de]
+ *  Copyright (c) 2017: Andreas Walz
+ *
+ *  [1] A. Walz, A. Sikora, "eTPL: An Enhanced Version of the TLS Presentation
+ *      Language Suitable for Automated Parser Generation", 9th IEEE
+ *      International Conference on Intelligent Data Acquisition and Advanced
+ *      Computing Systems: Technology and Applications (IDAACS’2017), Preprint:
+ *      https://ivesk.hs-offenburg.de/fileadmin/Einrichtungen/ivesk/files/
+ *      preprint_eTPL_IDAACS-2017.pdf
+ */
+
+// The order of definitions is not relevant as long as there are no cycles.
+
+// TLSRecordStream is an infinite vector of TLSRecord s
+TLSRecord TLSRecordStream[];
+
+struct {
+    // This field is marked as "distinctive": the dynamic type of a TLSRecord
+    // is determined by the actual value of field "type"
+    distinctive Type type;
+    Version version;
+    uint16 length;
+    select (type) {
+        case alert:
+            Alert alert(length);
+        case handshake:
+            HandshakeMessage hsMsg(length);
+        default:
+            // Substructure for TLSRecords other than alert and handshake not yet defined
+            opaque unknown[length];
+    } msg;
+} TLSRecord;
+
+enum {
+    warning(1),
+    fatal(2),
+    unknown(*), 
+    (255)
+} AlertLevel;
+
+enum {
+    close_notify(0),
+    unexpected_message(10),
+    bad_record_mac(20),
+    decryption_failed_RESERVED(21),
+    record_overflow(22),
+    decompression_failure(30),
+    handshake_failure(40),
+    no_certificate_RESERVED(41),
+    bad_certificate(42),
+    unsupported_certificate(43),
+    certificate_revoked(44),
+    certificate_expired(45),
+    certificate_unknown(46),
+    illegal_parameter(47),
+    unknown_ca(48),
+    access_denied(49),
+    decode_error(50),
+    decrypt_error(51),
+    export_restriction_RESERVED(60),
+    protocol_version(70),
+    insufficient_security(71),
+    internal_error(80),
+    user_canceled(90),
+    no_renegotiation(100),
+    unsupported_extension(110),
+    unknown(*),
+    (255)
+} AlertDescription;
+
+struct {
+    AlertLevel level;
+    AlertDescription description;
+} Alert;
+
+
+enum { 
+    change_cipher_spec(20),
+    alert(21),
+    handshake(22),
+    application_data(23),
+    unknown(*),
+    (255)
+} Type;
+
+enum { 
+    SSLv3(0x0300), 
+    TLSv1(0x0301), 
+    TLSv1_1(0x0302),
+    TLSv1_2(0x0303),
+    DTLSv1_2(0xFEFD), 
+    unknown(*),
+    (2^16-1)
+} Version;
+
+struct {
+    HandshakeType type;
+    uint24 length;
+    select (type) {
+        case client_hello:
+            ClientHello clientHello(length);
+        case server_hello:
+            ServerHello serverHello(length);
+        case certificate:
+            ASN1Cert certificates<0..2^24-1>;
+        case server_key_exchange:
+            ServerKeyExchange serverKeyExchange(length);
+        case client_key_exchange:
+            ClientKeyExchange clientKeyExchange(length);
+        default:
+            opaque unknown[length];
+    } msg;
+} HandshakeMessage;
+
+enum {
+    hello_request(0),
+    client_hello(1),
+    server_hello(2),
+    new_session_ticket(4),
+    certificate(11),
+    server_key_exchange(12),
+    certificate_request(13),
+    server_hello_done(14),
+    certificate_verify(15),
+    client_key_exchange(16),
+    finished(20),
+    unknown(*),
+    (255)
+} HandshakeType;
+
+struct {
+    Version version;
+    opaque random[32];
+    uint8 session_id_length;
+    opaque session_id[session_id_length];
+    CipherSuite cipher_suites<2..2^16-2>;
+    CompressionMethod compression_methods<1..2^8-1>;
+    Extension extensions<0..2^16-1>;
+} ClientHello;
+
+struct {
+    Version version;
+    opaque random[32];
+    uint8 session_id_length;
+    opaque session_id[session_id_length];
+    CipherSuite cipher_suite;
+    CompressionMethod compression_method;
+    Extension extensions<0..2^16-1>;
+} ServerHello;
+
+opaque ASN1Cert<2^24-1>;
+
+struct {
+    distinctive ExtensionType type;
+    uint16 length;
+    select (type) {
+        case server_name:
+            ServerNameList(length);
+        case max_fragment_length:
+            MaxFragmentLengthExtension(length);
+        case client_certificate_url:
+            CertificateURL(length);
+        case trusted_ca_keys:
+            TrustedAuthorities(length);
+        case truncated_hmac:
+            TruncatedHMACExtension(length);
+        case status_request:
+            CertificateStatusRequest(length);
+        case user_mapping:
+            UserMappingTypeList(length);
+        case client_authz, server_authz:
+            AuthzDataFormats(length);
+        case cert_type:
+            Client_CertificateTypeExtension(length);
+        case supported_groups:
+            EllipticCurveList(length);
+        case ec_point_formats:
+            ECPointFormatList(length);
+        case srp:
+            SRPExtension(length);
+        case signature_algorithms:
+            SignatureAndHashAlgorithms(length);
+        case use_srtp:
+            UseSRTPData(length);
+        case heartbeat:
+            HeartbeatExtension(length);
+        case application_layer_protocol_negotiation:
+            ProtocolNameList(length);
+        case status_request_v2:
+            CertificateStatusRequestListV2(length);
+        case signed_certificate_timestamp:
+            Client_SignedCertificateTimestamp(length);
+        case client_certificate_type:
+            Client_ClientCertTypeExtension(length);
+        case server_certificate_type:
+            Client_ServerCertTypeExtension(length);
+        case padding:
+            PaddingExtension(length);
+        case encrypt_then_mac:
+            EncryptThenMacExtension(length);
+        case extended_master_secret:
+            ExtendedMasterSecretExtension(length);
+        case cached_info:
+            Client_CachedInformation(length);
+        case renegotiation_info:
+            RenegotiationInfo(length);
+
+        default:
+            opaque data[length];
+    } datax;
+} Extension;
+
+
+enum {
+    server_name(0),
+    max_fragment_length(1),
+    client_certificate_url(2),
+    trusted_ca_keys(3),
+    truncated_hmac(4),
+    status_request(5),
+    user_mapping(6),
+    client_authz(7),
+    server_authz(8),
+    cert_type(9),
+    supported_groups(10),
+    ec_point_formats(11),
+    srp(12),
+    signature_algorithms(13),
+    use_srtp(14),
+    heartbeat(15),
+    application_layer_protocol_negotiation(16),
+    status_request_v2(17),
+    signed_certificate_timestamp(18),
+    client_certificate_type(19),
+    server_certificate_type(20),
+    padding(21),
+    encrypt_then_mac(22),
+    extended_master_secret(23),
+    cached_info(25),
+    SessionTicket_TLS(35),
+    renegotiation_info(65281),
+    unknown(*),
+    (0xFFFF)
+} ExtensionType;
+
+enum {
+    no_compression(0), unknown(*), (255)
+} CompressionMethod;
+
+enum {
+    TLS_NULL_WITH_NULL_NULL(0x0000),
+    TLS_RSA_WITH_NULL_MD5(0x0001),
+    TLS_RSA_WITH_NULL_SHA(0x0002),
+    TLS_RSA_EXPORT_WITH_RC4_40_MD5(0x0003),
+    TLS_RSA_WITH_RC4_128_MD5(0x0004),
+    TLS_RSA_WITH_RC4_128_SHA(0x0005),
+    TLS_RSA_EXPORT_WITH_RC2_CBC_40_MD5(0x0006),
+    TLS_RSA_WITH_IDEA_CBC_SHA(0x0007),
+    TLS_RSA_EXPORT_WITH_DES40_CBC_SHA(0x0008),
+    TLS_RSA_WITH_DES_CBC_SHA(0x0009),
+    TLS_RSA_WITH_3DES_EDE_CBC_SHA(0x000A),
+    TLS_DH_DSS_EXPORT_WITH_DES40_CBC_SHA(0x000B),
+    TLS_DH_DSS_WITH_DES_CBC_SHA(0x000C),
+    TLS_DH_DSS_WITH_3DES_EDE_CBC_SHA(0x000D),
+    TLS_DH_RSA_EXPORT_WITH_DES40_CBC_SHA(0x000E),
+    TLS_DH_RSA_WITH_DES_CBC_SHA(0x000F),
+    TLS_DH_RSA_WITH_3DES_EDE_CBC_SHA(0x0010),
+    TLS_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA(0x0011),
+    TLS_DHE_DSS_WITH_DES_CBC_SHA(0x0012),
+    TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA(0x0013),
+    TLS_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA(0x0014),
+    TLS_DHE_RSA_WITH_DES_CBC_SHA(0x0015),
+    TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA(0x0016),
+    TLS_DH_anon_EXPORT_WITH_RC4_40_MD5(0x0017),
+    TLS_DH_anon_WITH_RC4_128_MD5(0x0018),
+    TLS_DH_anon_EXPORT_WITH_DES40_CBC_SHA(0x0019),
+    TLS_DH_anon_WITH_DES_CBC_SHA(0x001A),
+    TLS_DH_anon_WITH_3DES_EDE_CBC_SHA(0x001B),
+    TLS_KRB5_WITH_DES_CBC_SHA(0x001E),
+    TLS_KRB5_WITH_3DES_EDE_CBC_SHA(0x001F),
+    TLS_KRB5_WITH_RC4_128_SHA(0x0020),
+    TLS_KRB5_WITH_IDEA_CBC_SHA(0x0021),
+    TLS_KRB5_WITH_DES_CBC_MD5(0x0022),
+    TLS_KRB5_WITH_3DES_EDE_CBC_MD5(0x0023),
+    TLS_KRB5_WITH_RC4_128_MD5(0x0024),
+    TLS_KRB5_WITH_IDEA_CBC_MD5(0x0025),
+    TLS_KRB5_EXPORT_WITH_DES_CBC_40_SHA(0x0026),
+    TLS_KRB5_EXPORT_WITH_RC2_CBC_40_SHA(0x0027),
+    TLS_KRB5_EXPORT_WITH_RC4_40_SHA(0x0028),
+    TLS_KRB5_EXPORT_WITH_DES_CBC_40_MD5(0x0029),
+    TLS_KRB5_EXPORT_WITH_RC2_CBC_40_MD5(0x002A),
+    TLS_KRB5_EXPORT_WITH_RC4_40_MD5(0x002B),
+    TLS_PSK_WITH_NULL_SHA(0x002C),
+    TLS_DHE_PSK_WITH_NULL_SHA(0x002D),
+    TLS_RSA_PSK_WITH_NULL_SHA(0x002E),
+    TLS_RSA_WITH_AES_128_CBC_SHA(0x002F),
+    TLS_DH_DSS_WITH_AES_128_CBC_SHA(0x0030),
+    TLS_DH_RSA_WITH_AES_128_CBC_SHA(0x0031),
+    TLS_DHE_DSS_WITH_AES_128_CBC_SHA(0x0032),
+    TLS_DHE_RSA_WITH_AES_128_CBC_SHA(0x0033),
+    TLS_DH_anon_WITH_AES_128_CBC_SHA(0x0034),
+    TLS_RSA_WITH_AES_256_CBC_SHA(0x0035),
+    TLS_DH_DSS_WITH_AES_256_CBC_SHA(0x0036),
+    TLS_DH_RSA_WITH_AES_256_CBC_SHA(0x0037),
+    TLS_DHE_DSS_WITH_AES_256_CBC_SHA(0x0038),
+    TLS_DHE_RSA_WITH_AES_256_CBC_SHA(0x0039),
+    TLS_DH_anon_WITH_AES_256_CBC_SHA(0x003A),
+    TLS_RSA_WITH_NULL_SHA256(0x003B),
+    TLS_RSA_WITH_AES_128_CBC_SHA256(0x003C),
+    TLS_RSA_WITH_AES_256_CBC_SHA256(0x003D),
+    TLS_DH_DSS_WITH_AES_128_CBC_SHA256(0x003E),
+    TLS_DH_RSA_WITH_AES_128_CBC_SHA256(0x003F),
+    TLS_DHE_DSS_WITH_AES_128_CBC_SHA256(0x0040),
+    TLS_RSA_WITH_CAMELLIA_128_CBC_SHA(0x0041),
+    TLS_DH_DSS_WITH_CAMELLIA_128_CBC_SHA(0x0042),
+    TLS_DH_RSA_WITH_CAMELLIA_128_CBC_SHA(0x0043),
+    TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA(0x0044),
+    TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA(0x0045),
+    TLS_DH_anon_WITH_CAMELLIA_128_CBC_SHA(0x0046),
+    TLS_DHE_RSA_WITH_AES_128_CBC_SHA256(0x0067),
+    TLS_DH_DSS_WITH_AES_256_CBC_SHA256(0x0068),
+    TLS_DH_RSA_WITH_AES_256_CBC_SHA256(0x0069),
+    TLS_DHE_DSS_WITH_AES_256_CBC_SHA256(0x006A),
+    TLS_DHE_RSA_WITH_AES_256_CBC_SHA256(0x006B),
+    TLS_DH_anon_WITH_AES_128_CBC_SHA256(0x006C),
+    TLS_DH_anon_WITH_AES_256_CBC_SHA256(0x006D),
+    TLS_RSA_WITH_CAMELLIA_256_CBC_SHA(0x0084),
+    TLS_DH_DSS_WITH_CAMELLIA_256_CBC_SHA(0x0085),
+    TLS_DH_RSA_WITH_CAMELLIA_256_CBC_SHA(0x0086),
+    TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA(0x0087),
+    TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA(0x0088),
+    TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA(0x0089),
+    TLS_PSK_WITH_RC4_128_SHA(0x008A),
+    TLS_PSK_WITH_3DES_EDE_CBC_SHA(0x008B),
+    TLS_PSK_WITH_AES_128_CBC_SHA(0x008C),
+    TLS_PSK_WITH_AES_256_CBC_SHA(0x008D),
+    TLS_DHE_PSK_WITH_RC4_128_SHA(0x008E),
+    TLS_DHE_PSK_WITH_3DES_EDE_CBC_SHA(0x008F),
+    TLS_DHE_PSK_WITH_AES_128_CBC_SHA(0x0090),
+    TLS_DHE_PSK_WITH_AES_256_CBC_SHA(0x0091),
+    TLS_RSA_PSK_WITH_RC4_128_SHA(0x0092),
+    TLS_RSA_PSK_WITH_3DES_EDE_CBC_SHA(0x0093),
+    TLS_RSA_PSK_WITH_AES_128_CBC_SHA(0x0094),
+    TLS_RSA_PSK_WITH_AES_256_CBC_SHA(0x0095),
+    TLS_RSA_WITH_SEED_CBC_SHA(0x0096),
+    TLS_DH_DSS_WITH_SEED_CBC_SHA(0x0097),
+    TLS_DH_RSA_WITH_SEED_CBC_SHA(0x0098),
+    TLS_DHE_DSS_WITH_SEED_CBC_SHA(0x0099),
+    TLS_DHE_RSA_WITH_SEED_CBC_SHA(0x009A),
+    TLS_DH_anon_WITH_SEED_CBC_SHA(0x009B),
+    TLS_RSA_WITH_AES_128_GCM_SHA256(0x009C),
+    TLS_RSA_WITH_AES_256_GCM_SHA384(0x009D),
+    TLS_DHE_RSA_WITH_AES_128_GCM_SHA256(0x009E),
+    TLS_DHE_RSA_WITH_AES_256_GCM_SHA384(0x009F),
+    TLS_DH_RSA_WITH_AES_128_GCM_SHA256(0x00A0),
+    TLS_DH_RSA_WITH_AES_256_GCM_SHA384(0x00A1),
+    TLS_DHE_DSS_WITH_AES_128_GCM_SHA256(0x00A2),
+    TLS_DHE_DSS_WITH_AES_256_GCM_SHA384(0x00A3),
+    TLS_DH_DSS_WITH_AES_128_GCM_SHA256(0x00A4),
+    TLS_DH_DSS_WITH_AES_256_GCM_SHA384(0x00A5),
+    TLS_DH_anon_WITH_AES_128_GCM_SHA256(0x00A6),
+    TLS_DH_anon_WITH_AES_256_GCM_SHA384(0x00A7),
+    TLS_PSK_WITH_AES_128_GCM_SHA256(0x00A8),
+    TLS_PSK_WITH_AES_256_GCM_SHA384(0x00A9),
+    TLS_DHE_PSK_WITH_AES_128_GCM_SHA256(0x00AA),
+    TLS_DHE_PSK_WITH_AES_256_GCM_SHA384(0x00AB),
+    TLS_RSA_PSK_WITH_AES_128_GCM_SHA256(0x00AC),
+    TLS_RSA_PSK_WITH_AES_256_GCM_SHA384(0x00AD),
+    TLS_PSK_WITH_AES_128_CBC_SHA256(0x00AE),
+    TLS_PSK_WITH_AES_256_CBC_SHA384(0x00AF),
+    TLS_PSK_WITH_NULL_SHA256(0x00B0),
+    TLS_PSK_WITH_NULL_SHA384(0x00B1),
+    TLS_DHE_PSK_WITH_AES_128_CBC_SHA256(0x00B2),
+    TLS_DHE_PSK_WITH_AES_256_CBC_SHA384(0x00B3),
+    TLS_DHE_PSK_WITH_NULL_SHA256(0x00B4),
+    TLS_DHE_PSK_WITH_NULL_SHA384(0x00B5),
+    TLS_RSA_PSK_WITH_AES_128_CBC_SHA256(0x00B6),
+    TLS_RSA_PSK_WITH_AES_256_CBC_SHA384(0x00B7),
+    TLS_RSA_PSK_WITH_NULL_SHA256(0x00B8),
+    TLS_RSA_PSK_WITH_NULL_SHA384(0x00B9),
+    TLS_RSA_WITH_CAMELLIA_128_CBC_SHA256(0x00BA),
+    TLS_DH_DSS_WITH_CAMELLIA_128_CBC_SHA256(0x00BB),
+    TLS_DH_RSA_WITH_CAMELLIA_128_CBC_SHA256(0x00BC),
+    TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA256(0x00BD),
+    TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA256(0x00BE),
+    TLS_DH_anon_WITH_CAMELLIA_128_CBC_SHA256(0x00BF),
+    TLS_RSA_WITH_CAMELLIA_256_CBC_SHA256(0x00C0),
+    TLS_DH_DSS_WITH_CAMELLIA_256_CBC_SHA256(0x00C1),
+    TLS_DH_RSA_WITH_CAMELLIA_256_CBC_SHA256(0x00C2),
+    TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA256(0x00C3),
+    TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA256(0x00C4),
+    TLS_DH_anon_WITH_CAMELLIA_256_CBC_SHA256(0x00C5),
+    TLS_EMPTY_RENEGOTIATION_INFO_SCSV(0x00FF),
+    TLS_FALLBACK_SCSV(0x5600),
+    TLS_ECDH_ECDSA_WITH_NULL_SHA(0xC001),
+    TLS_ECDH_ECDSA_WITH_RC4_128_SHA(0xC002),
+    TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA(0xC003),
+    TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA(0xC004),
+    TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA(0xC005),
+    TLS_ECDHE_ECDSA_WITH_NULL_SHA(0xC006),
+    TLS_ECDHE_ECDSA_WITH_RC4_128_SHA(0xC007),
+    TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA(0xC008),
+    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA(0xC009),
+    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA(0xC00A),
+    TLS_ECDH_RSA_WITH_NULL_SHA(0xC00B),
+    TLS_ECDH_RSA_WITH_RC4_128_SHA(0xC00C),
+    TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA(0xC00D),
+    TLS_ECDH_RSA_WITH_AES_128_CBC_SHA(0xC00E),
+    TLS_ECDH_RSA_WITH_AES_256_CBC_SHA(0xC00F),
+    TLS_ECDHE_RSA_WITH_NULL_SHA(0xC010),
+    TLS_ECDHE_RSA_WITH_RC4_128_SHA(0xC011),
+    TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA(0xC012),
+    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA(0xC013),
+    TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA(0xC014),
+    TLS_ECDH_anon_WITH_NULL_SHA(0xC015),
+    TLS_ECDH_anon_WITH_RC4_128_SHA(0xC016),
+    TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA(0xC017),
+    TLS_ECDH_anon_WITH_AES_128_CBC_SHA(0xC018),
+    TLS_ECDH_anon_WITH_AES_256_CBC_SHA(0xC019),
+    TLS_SRP_SHA_WITH_3DES_EDE_CBC_SHA(0xC01A),
+    TLS_SRP_SHA_RSA_WITH_3DES_EDE_CBC_SHA(0xC01B),
+    TLS_SRP_SHA_DSS_WITH_3DES_EDE_CBC_SHA(0xC01C),
+    TLS_SRP_SHA_WITH_AES_128_CBC_SHA(0xC01D),
+    TLS_SRP_SHA_RSA_WITH_AES_128_CBC_SHA(0xC01E),
+    TLS_SRP_SHA_DSS_WITH_AES_128_CBC_SHA(0xC01F),
+    TLS_SRP_SHA_WITH_AES_256_CBC_SHA(0xC020),
+    TLS_SRP_SHA_RSA_WITH_AES_256_CBC_SHA(0xC021),
+    TLS_SRP_SHA_DSS_WITH_AES_256_CBC_SHA(0xC022),
+    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256(0xC023),
+    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384(0xC024),
+    TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256(0xC025),
+    TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384(0xC026),
+    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256(0xC027),
+    TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384(0xC028),
+    TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256(0xC029),
+    TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384(0xC02A),
+    TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256(0xC02B),
+    TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384(0xC02C),
+    TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256(0xC02D),
+    TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384(0xC02E),
+    TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256(0xC02F),
+    TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384(0xC030),
+    TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256(0xC031),
+    TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384(0xC032),
+    TLS_ECDHE_PSK_WITH_RC4_128_SHA(0xC033),
+    TLS_ECDHE_PSK_WITH_3DES_EDE_CBC_SHA(0xC034),
+    TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA(0xC035),
+    TLS_ECDHE_PSK_WITH_AES_256_CBC_SHA(0xC036),
+    TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256(0xC037),
+    TLS_ECDHE_PSK_WITH_AES_256_CBC_SHA384(0xC038),
+    TLS_ECDHE_PSK_WITH_NULL_SHA(0xC039),
+    TLS_ECDHE_PSK_WITH_NULL_SHA256(0xC03A),
+    TLS_ECDHE_PSK_WITH_NULL_SHA384(0xC03B),
+    TLS_RSA_WITH_ARIA_128_CBC_SHA256(0xC03C),
+    TLS_RSA_WITH_ARIA_256_CBC_SHA384(0xC03D),
+    TLS_DH_DSS_WITH_ARIA_128_CBC_SHA256(0xC03E),
+    TLS_DH_DSS_WITH_ARIA_256_CBC_SHA384(0xC03F),
+    TLS_DH_RSA_WITH_ARIA_128_CBC_SHA256(0xC040),
+    TLS_DH_RSA_WITH_ARIA_256_CBC_SHA384(0xC041),
+    TLS_DHE_DSS_WITH_ARIA_128_CBC_SHA256(0xC042),
+    TLS_DHE_DSS_WITH_ARIA_256_CBC_SHA384(0xC043),
+    TLS_DHE_RSA_WITH_ARIA_128_CBC_SHA256(0xC044),
+    TLS_DHE_RSA_WITH_ARIA_256_CBC_SHA384(0xC045),
+    TLS_DH_anon_WITH_ARIA_128_CBC_SHA256(0xC046),
+    TLS_DH_anon_WITH_ARIA_256_CBC_SHA384(0xC047),
+    TLS_ECDHE_ECDSA_WITH_ARIA_128_CBC_SHA256(0xC048),
+    TLS_ECDHE_ECDSA_WITH_ARIA_256_CBC_SHA384(0xC049),
+    TLS_ECDH_ECDSA_WITH_ARIA_128_CBC_SHA256(0xC04A),
+    TLS_ECDH_ECDSA_WITH_ARIA_256_CBC_SHA384(0xC04B),
+    TLS_ECDHE_RSA_WITH_ARIA_128_CBC_SHA256(0xC04C),
+    TLS_ECDHE_RSA_WITH_ARIA_256_CBC_SHA384(0xC04D),
+    TLS_ECDH_RSA_WITH_ARIA_128_CBC_SHA256(0xC04E),
+    TLS_ECDH_RSA_WITH_ARIA_256_CBC_SHA384(0xC04F),
+    TLS_RSA_WITH_ARIA_128_GCM_SHA256(0xC050),
+    TLS_RSA_WITH_ARIA_256_GCM_SHA384(0xC051),
+    TLS_DHE_RSA_WITH_ARIA_128_GCM_SHA256(0xC052),
+    TLS_DHE_RSA_WITH_ARIA_256_GCM_SHA384(0xC053),
+    TLS_DH_RSA_WITH_ARIA_128_GCM_SHA256(0xC054),
+    TLS_DH_RSA_WITH_ARIA_256_GCM_SHA384(0xC055),
+    TLS_DHE_DSS_WITH_ARIA_128_GCM_SHA256(0xC056),
+    TLS_DHE_DSS_WITH_ARIA_256_GCM_SHA384(0xC057),
+    TLS_DH_DSS_WITH_ARIA_128_GCM_SHA256(0xC058),
+    TLS_DH_DSS_WITH_ARIA_256_GCM_SHA384(0xC059),
+    TLS_DH_anon_WITH_ARIA_128_GCM_SHA256(0xC05A),
+    TLS_DH_anon_WITH_ARIA_256_GCM_SHA384(0xC05B),
+    TLS_ECDHE_ECDSA_WITH_ARIA_128_GCM_SHA256(0xC05C),
+    TLS_ECDHE_ECDSA_WITH_ARIA_256_GCM_SHA384(0xC05D),
+    TLS_ECDH_ECDSA_WITH_ARIA_128_GCM_SHA256(0xC05E),
+    TLS_ECDH_ECDSA_WITH_ARIA_256_GCM_SHA384(0xC05F),
+    TLS_ECDHE_RSA_WITH_ARIA_128_GCM_SHA256(0xC060),
+    TLS_ECDHE_RSA_WITH_ARIA_256_GCM_SHA384(0xC061),
+    TLS_ECDH_RSA_WITH_ARIA_128_GCM_SHA256(0xC062),
+    TLS_ECDH_RSA_WITH_ARIA_256_GCM_SHA384(0xC063),
+    TLS_PSK_WITH_ARIA_128_CBC_SHA256(0xC064),
+    TLS_PSK_WITH_ARIA_256_CBC_SHA384(0xC065),
+    TLS_DHE_PSK_WITH_ARIA_128_CBC_SHA256(0xC066),
+    TLS_DHE_PSK_WITH_ARIA_256_CBC_SHA384(0xC067),
+    TLS_RSA_PSK_WITH_ARIA_128_CBC_SHA256(0xC068),
+    TLS_RSA_PSK_WITH_ARIA_256_CBC_SHA384(0xC069),
+    TLS_PSK_WITH_ARIA_128_GCM_SHA256(0xC06A),
+    TLS_PSK_WITH_ARIA_256_GCM_SHA384(0xC06B),
+    TLS_DHE_PSK_WITH_ARIA_128_GCM_SHA256(0xC06C),
+    TLS_DHE_PSK_WITH_ARIA_256_GCM_SHA384(0xC06D),
+    TLS_RSA_PSK_WITH_ARIA_128_GCM_SHA256(0xC06E),
+    TLS_RSA_PSK_WITH_ARIA_256_GCM_SHA384(0xC06F),
+    TLS_ECDHE_PSK_WITH_ARIA_128_CBC_SHA256(0xC070),
+    TLS_ECDHE_PSK_WITH_ARIA_256_CBC_SHA384(0xC071),
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_128_CBC_SHA256(0xC072),
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_256_CBC_SHA384(0xC073),
+    TLS_ECDH_ECDSA_WITH_CAMELLIA_128_CBC_SHA256(0xC074),
+    TLS_ECDH_ECDSA_WITH_CAMELLIA_256_CBC_SHA384(0xC075),
+    TLS_ECDHE_RSA_WITH_CAMELLIA_128_CBC_SHA256(0xC076),
+    TLS_ECDHE_RSA_WITH_CAMELLIA_256_CBC_SHA384(0xC077),
+    TLS_ECDH_RSA_WITH_CAMELLIA_128_CBC_SHA256(0xC078),
+    TLS_ECDH_RSA_WITH_CAMELLIA_256_CBC_SHA384(0xC079),
+    TLS_RSA_WITH_CAMELLIA_128_GCM_SHA256(0xC07A),
+    TLS_RSA_WITH_CAMELLIA_256_GCM_SHA384(0xC07B),
+    TLS_DHE_RSA_WITH_CAMELLIA_128_GCM_SHA256(0xC07C),
+    TLS_DHE_RSA_WITH_CAMELLIA_256_GCM_SHA384(0xC07D),
+    TLS_DH_RSA_WITH_CAMELLIA_128_GCM_SHA256(0xC07E),
+    TLS_DH_RSA_WITH_CAMELLIA_256_GCM_SHA384(0xC07F),
+    TLS_DHE_DSS_WITH_CAMELLIA_128_GCM_SHA256(0xC080),
+    TLS_DHE_DSS_WITH_CAMELLIA_256_GCM_SHA384(0xC081),
+    TLS_DH_DSS_WITH_CAMELLIA_128_GCM_SHA256(0xC082),
+    TLS_DH_DSS_WITH_CAMELLIA_256_GCM_SHA384(0xC083),
+    TLS_DH_anon_WITH_CAMELLIA_128_GCM_SHA256(0xC084),
+    TLS_DH_anon_WITH_CAMELLIA_256_GCM_SHA384(0xC085),
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_128_GCM_SHA256(0xC086),
+    TLS_ECDHE_ECDSA_WITH_CAMELLIA_256_GCM_SHA384(0xC087),
+    TLS_ECDH_ECDSA_WITH_CAMELLIA_128_GCM_SHA256(0xC088),
+    TLS_ECDH_ECDSA_WITH_CAMELLIA_256_GCM_SHA384(0xC089),
+    TLS_ECDHE_RSA_WITH_CAMELLIA_128_GCM_SHA256(0xC08A),
+    TLS_ECDHE_RSA_WITH_CAMELLIA_256_GCM_SHA384(0xC08B),
+    TLS_ECDH_RSA_WITH_CAMELLIA_128_GCM_SHA256(0xC08C),
+    TLS_ECDH_RSA_WITH_CAMELLIA_256_GCM_SHA384(0xC08D),
+    TLS_PSK_WITH_CAMELLIA_128_GCM_SHA256(0xC08E),
+    TLS_PSK_WITH_CAMELLIA_256_GCM_SHA384(0xC08F),
+    TLS_DHE_PSK_WITH_CAMELLIA_128_GCM_SHA256(0xC090),
+    TLS_DHE_PSK_WITH_CAMELLIA_256_GCM_SHA384(0xC091),
+    TLS_RSA_PSK_WITH_CAMELLIA_128_GCM_SHA256(0xC092),
+    TLS_RSA_PSK_WITH_CAMELLIA_256_GCM_SHA384(0xC093),
+    TLS_PSK_WITH_CAMELLIA_128_CBC_SHA256(0xC094),
+    TLS_PSK_WITH_CAMELLIA_256_CBC_SHA384(0xC095),
+    TLS_DHE_PSK_WITH_CAMELLIA_128_CBC_SHA256(0xC096),
+    TLS_DHE_PSK_WITH_CAMELLIA_256_CBC_SHA384(0xC097),
+    TLS_RSA_PSK_WITH_CAMELLIA_128_CBC_SHA256(0xC098),
+    TLS_RSA_PSK_WITH_CAMELLIA_256_CBC_SHA384(0xC099),
+    TLS_ECDHE_PSK_WITH_CAMELLIA_128_CBC_SHA256(0xC09A),
+    TLS_ECDHE_PSK_WITH_CAMELLIA_256_CBC_SHA384(0xC09B),
+    TLS_RSA_WITH_AES_128_CCM(0xC09C),
+    TLS_RSA_WITH_AES_256_CCM(0xC09D),
+    TLS_DHE_RSA_WITH_AES_128_CCM(0xC09E),
+    TLS_DHE_RSA_WITH_AES_256_CCM(0xC09F),
+    TLS_RSA_WITH_AES_128_CCM_8(0xC0A0),
+    TLS_RSA_WITH_AES_256_CCM_8(0xC0A1),
+    TLS_DHE_RSA_WITH_AES_128_CCM_8(0xC0A2),
+    TLS_DHE_RSA_WITH_AES_256_CCM_8(0xC0A3),
+    TLS_PSK_WITH_AES_128_CCM(0xC0A4),
+    TLS_PSK_WITH_AES_256_CCM(0xC0A5),
+    TLS_DHE_PSK_WITH_AES_128_CCM(0xC0A6),
+    TLS_DHE_PSK_WITH_AES_256_CCM(0xC0A7),
+    TLS_PSK_WITH_AES_128_CCM_8(0xC0A8),
+    TLS_PSK_WITH_AES_256_CCM_8(0xC0A9),
+    TLS_PSK_DHE_WITH_AES_128_CCM_8(0xC0AA),
+    TLS_PSK_DHE_WITH_AES_256_CCM_8(0xC0AB),
+    TLS_ECDHE_ECDSA_WITH_AES_128_CCM(0xC0AC),
+    TLS_ECDHE_ECDSA_WITH_AES_256_CCM(0xC0AD),
+    TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8(0xC0AE),
+    TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8(0xC0AF),
+    unknown(*)
+} CipherSuite;
+
+
+struct {
+    ServerECDHParams params;
+    Signature signed_params;
+} ServerKeyExchange;
+
+struct {
+    SignatureAndHashAlgorithm algo;
+    opaque signature<0..2^16-1>;
+//    uint16 length;
+//    ECDSASignature signature(length);
+} Signature;
+
+struct {
+  ASN1SequenceOfIntegers rs;
+} ECDSASignature;
+
+struct {
+    enum { sequence(0x30), (2^8-1) } tag;
+    ASN1Integer ints<0..2^8-1>;
+} ASN1SequenceOfIntegers;
+
+struct {
+    enum { integer(0x02), (2^8-1) } tag;
+    opaque int<0..2^8-1>;
+} ASN1Integer;
+
+
+struct {
+    uint16 length;
+    opaque content[length];
+} ClientKeyExchange;
+
+struct {
+    ECParameters curve_params;
+    ECPoint public;
+} ServerECDHParams;
+
+struct {
+    ECCurveType curve_type;
+    select (curve_type) {
+        case explicit_prime:
+            ECParameters_explicit_prime;
+        case named_curve:
+            NamedCurve namedcurve;
+        default:
+            opaque curve;    
+    };
+} ECParameters;
+
+
+struct { 
+    opaque prime_p<1..2^8-1>;
+    ECCurve curve;
+    ECPoint base;
+    opaque order<1..2^8-1>;
+    opaque cofactor<1..2^8-1>;
+} ECParameters_explicit_prime;
+
+
+struct {
+    opaque a<1..2^8-1>;
+    opaque b<1..2^8-1>;
+} ECCurve;
+
+
+enum {
+    explicit_prime (1),
+    explicit_char2 (2),
+    named_curve (3),
+    unknown(*),
+    (255)
+//    reserved(248..255)
+} ECCurveType;
+
+struct {
+    opaque point<1..2^8-1>;
+} ECPoint;
+
+
+// =============================================================================
+// Extensions
+// =============================================================================
+
+
+// CertificateStatusRequest extension ("server_name(0)")
+// -----------------------------------------------------------------------------
+
+enum {
+    host_name(0), unknown(*), (255)
+} NameType;
+
+opaque HostName<1..2^16-1>;
+
+struct {
+    NameType name_type;
+    select (name_type) {
+        case host_name:
+            HostName hostName;
+        default:
+            opaque;
+    } name;
+} ServerName;
+
+struct {
+    ServerName server_name_list<1..2^16-1>;
+} ServerNameList;
+
+
+// MaxFragmentLength extension ("max_fragment_length(1)")
+// -----------------------------------------------------------------------------
+
+enum {
+    max256(1), max512(2), max2048(3), max4096(4), unknown(*), (255)
+} MaxFragmentLength;
+
+struct {
+    MaxFragmentLength maxFragment;
+} MaxFragmentLengthExtension;
+
+
+// ClientCertificateURL extension ("client_certificate_url(2)")
+// -----------------------------------------------------------------------------
+
+enum {
+    individual_certs(0), pkipath(1), (255)
+} CertChainType;
+
+struct {
+    CertChainType type;
+    URLAndHash url_and_hash_list<1..2^16-1>;
+} CertificateURL;
+
+enum {
+    one(1),
+    (255)
+} URLAndHashPadding;
+
+struct {
+    opaque url<1..2^16-1>;
+    URLAndHashPadding padding;
+    opaque SHA1Hash[20];
+} URLAndHash;
+
+
+// TrustedCAs extension ("trusted_ca_keys(3)")
+// -----------------------------------------------------------------------------
+
+enum {
+    pre_agreed(0),
+    key_sha1_hash(1),
+    x509_name(2),
+    cert_sha1_hash(3),
+    unknown(*),
+    (255)
+} IdentifierType;
+
+opaque DistinguishedName<1..2^16-1>;
+
+struct {
+    IdentifierType identifier_type;
+    select (identifier_type) {
+        case pre_agreed:
+            struct {};
+        case key_sha1_hash:
+            opaque keySHA1Hash[20];
+        case x509_name:
+            DistinguishedName x509Name;
+        case cert_sha1_hash:
+            opaque certSHA1Hash[20];
+        default:
+            opaque;
+    } identifier;
+} TrustedAuthority;
+
+struct {
+    TrustedAuthority trusted_authorities_list<0..2^16-1>;
+} TrustedAuthorities;
+
+
+// TruncatedHMAC extension ("truncated_hmac(4)")
+// -----------------------------------------------------------------------------
+
+struct {} TruncatedHMACExtension;
+
+
+// CertificateStatusRequest extension ("status request(5)")
+// -----------------------------------------------------------------------------
+
+opaque ResponderID<1..2^16-1>;
+
+opaque Extensions<0..2^16-1>;
+
+struct {
+    ResponderID responder_id_list<0..2^16-1>;
+    Extensions request_extensions;
+} OCSPStatusRequest;
+
+struct {
+    CertificateStatusType status_type;
+    select (status_type) {
+        case ocsp:
+            OCSPStatusRequest;
+        default:
+            opaque status;
+    } request;
+} CertificateStatusRequest;
+
+
+// UserMapping extension ("user_mapping(6)")
+// -----------------------------------------------------------------------------
+
+enum {
+    upn_domain_hint(64),
+    unknown(*),
+    (255)
+} UserMappingType;
+
+struct {
+    UserMappingType user_mapping_types<1..2^8-1>;
+} UserMappingTypeList;
+
+
+// UserMapping extension ("client_authz(7), server_authz(8)")
+// -----------------------------------------------------------------------------
+
+enum {
+    x509_attr_cert(0),
+    saml_assertion(1),
+    x509_attr_cert_url(2),
+    saml_assertion_url(3),
+    unknown(*),
+    (255)
+} AuthzDataFormat;
+
+AuthzDataFormat AuthzDataFormats<1..2^8-1>;
+
+
+// CertificateType extension ("cert_type(9)")
+// -----------------------------------------------------------------------------
+
+struct {
+    CertificateType certificate_types<1..2^8-1>;
+} Client_CertificateTypeExtension;
+
+
+// SupportedGroups extension ("supported_groups(10)")
+// -----------------------------------------------------------------------------
+
+enum {
+    sect163k1 (1), sect163r1 (2), sect163r2 (3),
+    sect193r1 (4), sect193r2 (5), sect233k1 (6),
+    sect233r1 (7), sect239k1 (8), sect283k1 (9),
+    sect283r1 (10), sect409k1 (11), sect409r1 (12),
+    sect571k1 (13), sect571r1 (14), secp160k1 (15),
+    secp160r1 (16), secp160r2 (17), secp192k1 (18),
+    secp192r1 (19), secp224k1 (20), secp224r1 (21),
+    secp256k1 (22), secp256r1 (23), secp384r1 (24),
+    secp521r1 (25),
+//    reserved (0xFE00..0xFEFF),
+    arbitrary_explicit_prime_curves(0xFF01),
+    arbitrary_explicit_char2_curves(0xFF02),
+    unknown(*), (0xFFFF)
+} NamedCurve;
+
+struct {
+    NamedCurve elliptic_curve_list<1..2^16-1>;
+} EllipticCurveList;
+
+
+// ECPointFormats extension ("ec_point_formats(11)")
+// -----------------------------------------------------------------------------
+
+enum {
+    uncompressed(0),
+    ansiX962_compressed_prime(1),
+    ansiX962_compressed_char2(2),
+    unknown(*),
+    reserved (248..255)
+} ECPointFormat;
+
+struct {
+    ECPointFormat ec_point_format_list<1..2^8-1>;
+} ECPointFormatList;
+
+
+// SRP extension ("srp(12)")
+// -----------------------------------------------------------------------------
+
+struct {
+    opaque srp_I<1..2^8-1>;
+} SRPExtension;
+
+
+// SignatureAlgorithms extension ("signature_algorithms(13)")
+// -----------------------------------------------------------------------------
+
+enum {
+    anonymous(0), rsa(1), dsa(2), ecdsa(3), unknown(*), (255)
+} SignatureAlgorithm;
+
+enum {
+    none(0), md5(1), sha1(2), sha224(3), sha256(4), sha384(5),
+    sha512(6), unknown(*), (255)
+} HashAlgorithm;
+
+struct {
+    distinctive HashAlgorithm hash;
+    distinctive SignatureAlgorithm signature;
+} SignatureAndHashAlgorithm;
+
+SignatureAndHashAlgorithm SignatureAndHashAlgorithms<2..2^16-1>;
+
+
+// UseSRTP extension ("use_srtp(14)")
+// -----------------------------------------------------------------------------
+
+uint8 SRTPProtectionProfile[2];
+
+SRTPProtectionProfile SRTPProtectionProfiles<2..2^16-1>;
+
+struct {
+    SRTPProtectionProfiles SRTPProtectionProfilesXX;
+    opaque srtp_mki<0..255>;
+} UseSRTPData;
+
+
+// Heartbeat extension ("heartbeat(15)")
+// -----------------------------------------------------------------------------
+
+enum {
+    peer_allowed_to_send(1),
+    peer_not_allowed_to_send(2),
+    unknown(*),
+    (255)
+} HeartbeatMode;
+
+struct {
+    HeartbeatMode mode;
+} HeartbeatExtension;
+
+
+// ALPN extension ("application_layer_protocol_negotiation(16)")
+// -----------------------------------------------------------------------------
+
+opaque ProtocolName<1..2^8-1>;
+
+struct {
+    ProtocolName protocol_name_list<2..2^16-1>;
+} ProtocolNameList;
+
+
+// StatusRequest2 extension ("status_request_v2(17)")
+// -----------------------------------------------------------------------------
+
+enum {
+    ocsp(1),
+    ocsp_multi(2),
+    (255)
+} CertificateStatusType;
+
+struct {
+    CertificateStatusType status_type;
+    uint16 request_length;
+    select (status_type) {
+        case ocsp:
+            OCSPStatusRequest request1(request_length);
+        case ocsp_multi:
+            OCSPStatusRequest request2(request_length);
+        default:
+            opaque[request_length];
+    } request;
+} CertificateStatusRequestItemV2;
+
+struct {
+    CertificateStatusRequestItemV2 certificate_status_req_list<1..2^16-1>;
+} CertificateStatusRequestListV2;
+
+
+// SignedCertificateTimestamp extension ("signed_certificate_timestamp(18)")
+// -----------------------------------------------------------------------------
+
+struct {} Client_SignedCertificateTimestamp;
+
+
+// Client/ServerCertificateType extension ("client/server_certificate_type(19/20)")
+// -----------------------------------------------------------------------------
+
+enum {
+    X509(0),
+    OpenPGP(1),
+    RawPublicKey(2),
+    (255)
+} CertificateType;
+
+struct {
+    CertificateType client_certificate_types<1..2^8-1>;
+} Client_ClientCertTypeExtension;
+
+struct {
+    CertificateType server_certificate_types<1..2^8-1>;
+} Client_ServerCertTypeExtension;
+
+
+// Padding extension ("padding(21)")
+// -----------------------------------------------------------------------------
+
+enum {
+    zero(0),
+    (255)
+} PaddingByte;
+
+struct {
+    PaddingByte padding[];
+} PaddingExtension;
+
+
+// EncryptThenMac extension ("encrypt_then_mac(22)")
+// -----------------------------------------------------------------------------
+
+struct {} EncryptThenMacExtension;
+
+
+// ExtendedMasterSecret extension ("extended_master_secret(23)")
+// -----------------------------------------------------------------------------
+
+struct {} ExtendedMasterSecretExtension;
+
+
+// CachedInformation extension ("cached_info(25)")
+// -----------------------------------------------------------------------------
+
+enum {
+    cert(1),
+    cert_req(2),
+    (255)
+} CachedInformationType;
+
+struct {
+    CachedInformationType type;
+    opaque hash_value<1..255>;
+} Client_CachedObject;
+
+struct {
+    CachedInformationType type;
+} Server_CachedObject;
+
+struct {
+    Client_CachedObject cached_info<1..2^16-1>;
+} Client_CachedInformation;
+
+struct {
+    Server_CachedObject cached_info<1..2^16-1>;
+} Server_CachedInformation;
+
+
+// RenegotiationInfo extension ("renegotiation_info(65281)")
+// -----------------------------------------------------------------------------
+
+struct {
+    opaque renegotiated_connection<0..255>;
+} RenegotiationInfo;
+

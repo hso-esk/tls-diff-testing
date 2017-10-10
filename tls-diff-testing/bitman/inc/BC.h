@@ -1,0 +1,231 @@
+#ifndef __BC_H__
+#define __BC_H__
+
+#include <cstdlib>
+#include <inttypes.h>
+#include <string>
+
+
+/* ==========================================================================
+ *
+ *
+ *
+ * ========================================================================== */
+
+class BC {
+
+private:
+
+	ssize_t p_;
+
+public:
+
+	/* TODO: Add description */
+	static const BC& getMin(const BC& bc1, const BC& bc2);
+
+	/* TODO: Add description */
+	static const BC& getMax(const BC& bc1, const BC& bc2);
+
+	/* TODO: Add description */
+	inline static BC undef() {
+
+		return BC();
+	}
+
+
+	/* TODO: Add description */
+	BC();
+
+	/* TODO: Add description */
+	BC(ssize_t byte);
+
+	/* TODO: Add description */
+	BC(ssize_t byte, ssize_t bit);
+
+	size_t	byte() const;
+	size_t	byteCeil() const;
+	size_t	byteAligned() const;
+	size_t	bit() const;
+	size_t	bit8() const;
+
+
+	/* TODO: Add description */
+	inline const BC& getWithDefault(const BC& deflt) const {
+        
+        return (p_ >= 0) ? *this : deflt;
+    }
+
+
+	/* TODO: Add description */
+	inline bool isDef() const {
+
+		return (p_ >= 0);
+	}
+
+	/* TODO: Add description */
+	inline bool isUndef() const {
+
+		return (p_ < 0);
+	}
+
+	/* TODO: Add description */
+	inline bool isMultipleOf(const BC& bc) const {
+
+		return p_ >= 0 && bc.p_ > 0 && (p_ % bc.p_) == 0;
+	}
+
+	/* TODO: Add description */
+	inline bool operator==(const BC& bc) const {
+
+		return (p_ == bc.p_ || (p_ < 0 && bc.p_ < 0));
+	}
+
+	/* TODO: Add description */
+	inline bool operator==(ssize_t bytes) const {
+
+		return (bytes >= 0) ? (p_ == bytes * 8) : (p_ == -1);
+	}
+
+	/* TODO: Add description */
+	inline bool operator!=(const BC& bc) const {
+
+		return !((*this) == bc);
+	}
+
+	/* TODO: Add description */
+	inline bool operator!=(ssize_t bytes) const {
+
+		return !((*this) == bytes);
+	}
+
+	/* TODO: Add description */
+	inline bool operator<=(const BC& bc) const {
+
+		return ((*this) == bc) || ((*this) < bc);
+	}
+
+	/* TODO: Add description */
+	inline bool operator<=(size_t bytes) const {
+
+		return ((*this) == bytes) || ((*this) < bytes);
+	}
+
+	/* TODO: Add description */
+	inline bool operator>=(const BC& bc) const {
+
+		return ((*this) == bc) || ((*this) > bc);
+	}
+
+	/* TODO: Add description */
+	inline bool operator>=(size_t bytes) const {
+
+		return ((*this) == bytes) || ((*this) > bytes);
+	}
+
+	/* TODO: Add description */
+	bool operator<(const BC& bc) const;
+
+	/* TODO: Add description */
+	bool operator<(size_t bytes) const;
+
+	/* TODO: Add description */
+	bool operator>(const BC& bc) const;
+
+	/* TODO: Add description */
+	bool operator>(size_t bytes) const;
+
+
+	/* TODO: Add description */
+	inline BC& operator=(ssize_t bytes) {
+
+		p_ = (bytes >= 0) ? (bytes * 8) : -1;
+		return *this;
+	}
+
+	/* TODO: Add description */
+	inline BC& operator+=(const BC& bc) {
+
+		p_ = (bc.p_ >= 0 && p_ >= 0) ? (p_ + bc.p_) : -1;
+		return *this;
+	}
+
+	/* TODO: Add description */
+	BC&	operator+=(size_t bytes);
+
+	/* TODO: Add description */
+	BC& operator<<=(const BC& bc);
+
+	/* TODO: Add description */
+	BC& operator<<=(size_t bits);
+
+	/* TODO: Add description */
+	BC& operator++ (); // prefix ++
+
+	/* TODO: Add description */
+	BC operator++ (int); // postfix ++
+
+
+	/* TODO: Add description */
+	BC operator+(const BC& bc) const;
+
+	/* TODO: Add description */
+	BC operator+(size_t bytes) const;
+
+	/* TODO: Add description */
+	BC operator<<(const BC& bc) const;
+
+	/* TODO: Add description */
+	BC operator<<(size_t bits) const;
+
+
+	/* TODO: Add description */
+	BC& operator-=(const BC& bc);
+
+	/* TODO: Add description */
+	BC& operator-=(size_t bytes);
+
+	/* TODO: Add description */
+	BC& operator>>=(const BC& bc);
+
+	/* TODO: Add description */
+	BC& operator>>=(size_t bits);
+
+	/* TODO: Add description */
+	BC& operator-- (); // prefix --
+
+	/* TODO: Add description */
+	BC operator-- (int); // postfix --
+
+
+	/* TODO: Add description */
+	BC operator-(const BC& bc) const;
+
+	/* TODO: Add description */
+	BC operator-(size_t bytes) const;
+
+	/* TODO: Add description */
+	BC operator>>(const BC& bc) const;
+
+	/* TODO: Add description */
+	BC operator>>(size_t bits) const;
+
+
+	/* TODO: Add description */
+	BC floor(const BC& multipleOf) const;
+
+	/* TODO: Add description */
+	BC ceil(const BC& multipleOf) const;
+
+
+	/* TODO: Add description */
+	std::string	toString() const;
+
+	/* TODO: Add description */
+	std::string toStringDefault(const std::string& deflt) const;
+
+	/* TODO: Add description */
+	void print() const;
+
+};
+
+#endif
