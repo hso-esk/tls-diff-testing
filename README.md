@@ -68,7 +68,7 @@ popd
 
 pushd tls-diff-testing/apps/stimulator
 # Stimulate TLS servers (adapt "-s20" to the number chosen above)
-for fin in $(ls ../../tls-diff-fuzzing/*/stimuli.hex); do
+for fin in $(ls ../../generator/iteration-*/stimuli.hex); do
     ./stimulator -S5 -s20 $fin | tee ${fin}.responses
 done
 popd
