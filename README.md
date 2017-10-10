@@ -2,7 +2,9 @@
 
 This is the software implementing our differential fuzz test approach for the
 TLS handshake as presented in our manuscript "Exploiting Dissent: Towards 
-Fuzzing-based Differential Black-Box Testing of TLS Implementations".
+Fuzzing-based Differential Black-Box Testing of TLS Implementations". The paper
+will soon appear in IEEE Transactions on Dependable and Secure Computing (TDSC).
+A preprint will also be available soon.
 
 The software consists of two main components:
 * A shell script ("tls-server-batch") allowing to set up the five TLS server implementations
@@ -13,6 +15,7 @@ data.
 
 Please note: our software is evolving and is likely going to be subject to
 refactoring and restructuring. We cannot guarantee API stability in any form.
+
 
 ## How to use the code?
 
