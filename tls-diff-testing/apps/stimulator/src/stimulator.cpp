@@ -114,7 +114,7 @@ int msBlockAfterFailure = 2000;
  * ___________________________________________________________________________
  */
 void usage() {
-    cout << "./stimulate_servers_2 [OPTIONS] INPUT1 [INPUT2 ...]" << endl;
+    cout << "./stimulator [OPTIONS] INPUT1 [INPUT2 ...]" << endl;
     cout << "-s<num>         The number of slots" << endl;
     cout << "-S<num>         ..." << endl;
     cout << "-o<num>         ..." << endl;

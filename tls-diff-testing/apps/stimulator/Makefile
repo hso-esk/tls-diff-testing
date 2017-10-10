@@ -3,7 +3,7 @@ SRC_SUFFIX = .cpp
 EXECUTABLE = $(shell basename $(shell pwd))
 
 SRC_DIR    = src
-INC_DIRS   = inc ../../bitman/inc ../../cryptoman/inc ../../middleman/inc
+INC_DIRS   = ../../bitman/inc ../../cryptoman/inc ../../middleman/inc
 LIB_DIRS   = ../../bitman/build ../../cryptoman/build ../../middleman/build ../../../cryptopp
 
 BUILD_DIR  = build
