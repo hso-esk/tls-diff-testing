@@ -63,7 +63,7 @@ popd
 pushd tls-server-batch
 # Launch servers (20 instances per implementation, adapt the number "20" to the performance of your machine)
 # You will need the "screen" tool for that.
-./launch 20
+./launch.sh 20
 popd
 
 pushd tls-diff-testing/apps/stimulator
