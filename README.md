@@ -95,12 +95,12 @@ This software is licensed under the 3-clause BSD license. This license gives
 everyone the right to use and distribute the code, either in binary or source
 code format, as long as the copyright license is retained in the source code.
 
-Copyright (C) 2017
-Andreas Walz [andreas.walz@hs-offenburg.de]
-Offenburg University of Applied Sciences
-Institute of Reliable Embedded Systems and Communications Electronics (ivESK)
-[https://ivesk.hs-offenburg.de/]
-All rights reserved.
+Copyright (C) 2017  
+Andreas Walz [andreas.walz@hs-offenburg.de]  
+Offenburg University of Applied Sciences  
+Institute of Reliable Embedded Systems and Communications Electronics (ivESK)  
+[https://ivesk.hs-offenburg.de/]  
+All rights reserved.  
 
 
 
