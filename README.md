@@ -4,7 +4,7 @@ This is the software implementing our differential fuzz test approach for the
 TLS handshake as presented in our manuscript "Exploiting Dissent: Towards 
 Fuzzing-based Differential Black-Box Testing of TLS Implementations". The paper
 will soon appear in IEEE Transactions on Dependable and Secure Computing (TDSC).
-A preprint will also be available soon.
+A [preprint](https://ivesk.hs-offenburg.de/fileadmin/Einrichtungen/ivesk/files/preprint_TLS-Diff-Fuzzing_IEEE-TDSC.pdf) is available from our [institute's homepage](https://ivesk.hs-offenburg.de).
 
 The software consists of two main components:
 * A shell script ("tls-server-batch") allowing to set up the five TLS server implementations
@@ -23,7 +23,7 @@ In order to use our software:
 
 1. Download and build cryptopp
 
-Our software uses the Crypto++ Cryptographic Library [https://www.cryptopp.com/] for cryptographic operations. You need to download and build Crypto++ before building our software. Everything is condensed in the shell script setup_cryptopp.sh:
+Our software uses the [Crypto++ Cryptographic Library](https://www.cryptopp.com/) for cryptographic operations. You need to download and build Crypto++ before building our software. Everything is condensed in the shell script setup_cryptopp.sh:
 
 ```bash
 # Download and build cryptopp
