@@ -1,4 +1,4 @@
-# Differential fuzz testing of the TLS handshake
+# Differential fuzz testing of the TLS handshake 
 
 This is the software implementing our differential fuzz test approach for the
 TLS handshake as presented in our manuscript "Exploiting Dissent: Towards 
@@ -20,8 +20,18 @@ refactoring and restructuring. We cannot guarantee API stability in any form.
 ## How to use the code?
 
 In order to use our software:
+1. Download src code 
+   ```bash
+   git clone <tls-diff-testing.git>
+   ```
+   
+2. Build a docker image from Dockerfile
+    ```bash
+    docker build . -t the-diff-testing
+    ``` 
+3. Run docker continer
 
-1. Download and build cryptopp
+3. Download and build cryptopp
 
 Our software uses the [Crypto++ Cryptographic Library](https://www.cryptopp.com/) for cryptographic operations. You need to download and build Crypto++ before building our software. Everything is condensed in the shell script setup_cryptopp.sh:
 
