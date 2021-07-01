@@ -30,7 +30,11 @@ In order to use our software:
 
 2. :hammer: Build a docker image from Dockerfile
 
-   maybe it nee 10min- 30min, just wait and check log 
+   This process may take several hours(4h - 6h), 
+   You can get the main process information from `main.sh`, 
+   which includes generating 100 independent test corpora, 
+   each corpus contains 10w test data.So this process will last a very long time
+   just wait and check log 
 
    ```bash
    docker build . -t the-diff-testing
