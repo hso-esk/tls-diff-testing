@@ -37,4 +37,10 @@ RUN chmod +x main.sh \
     && chmod +x *.sh \
     && cd ${WORKDIR}/tls-diff-testing/generator/macros \
     && chmod +x *.sh
+# install pip & matplotlib
+RUN DEBIAN_FRONTEND=noninteractive apt-get -y update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install \
+    python3-pip \
+    && pip install matplotlib
+
 CMD ["bash","-c","${WORKDIR}/main.sh"]
