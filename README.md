@@ -6,13 +6,14 @@ Fuzzing-based Differential Black-Box Testing of TLS Implementations". The paper
 will soon appear in IEEE Transactions on Dependable and Secure Computing (TDSC).
 A [preprint](https://ivesk.hs-offenburg.de/fileadmin/Einrichtungen/ivesk/files/preprint_TLS-Diff-Fuzzing_IEEE-TDSC.pdf) is available from our [institute's homepage](https://ivesk.hs-offenburg.de).
 
-The software consists of two main components:
+The software consists of 3 main components:
 
 * A shell script ("tls-server-batch") allowing to set up the five TLS server implementations
   we used in our paper (OpenSSL, MatrixSSL, wolfSSL, mbedTLS and BoringSSL).
 * A C++ framework and some Python scripts ("tls-diff-testing") for generating TLS
   test messages, stimulating the five TLS servers, and for analyzing and visualizing 
   data.
+* Dockerfile, use docker to package & test  
 
 Please note: our software is evolving and is likely going to be subject to
 refactoring and restructuring. We cannot guarantee API stability in any form.
@@ -111,4 +112,3 @@ Institute of Reliable Embedded Systems and Communications Electronics (ivESK)
 All rights reserved.  
 
 
-~~~~
