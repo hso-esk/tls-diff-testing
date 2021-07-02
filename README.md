@@ -52,11 +52,10 @@ In order to use our software:
     ```bash
     docker build . -t the-diff-testing
     ```
-    you can get the data from the link belw,unzip and put it in `tls-diff-testing/generator/`
+    you can get the data from the link belw,unzip and put into docker container in `<project>/tls-diff-testing/generator/`
     link：https://pan.baidu.com/s/1H97CWkevV63tak8ZdYdDRQ 
     code：yfjz 
-    
-   
+    >If the link fails, please contact sizaif2000@gmail.com
 3. :arrow_forward: Run docker container
 
    ==**after build image, Enter the container and continue to execute the following commands**==
