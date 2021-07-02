@@ -13,7 +13,7 @@ The software consists of 3 main components:
 * A C++ framework and some Python scripts ("tls-diff-testing") for generating TLS
   test messages, stimulating the five TLS servers, and for analyzing and visualizing 
   data.
-* Dockerfile, use docker to package & test  
+* Dockerfile, use docker to package & test in docker container 
 
 Please note: our software is evolving and is likely going to be subject to
 refactoring and restructuring. We cannot guarantee API stability in any form.
