@@ -27,6 +27,7 @@ RUN wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_5_6_5.tar.gz  \
     && tar -xzf CRYPTOPP_5_6_5.tar.gz \
     && mv cryptopp-CRYPTOPP_5_6_5 cryptopp \
     && cd cryptopp && make
+
 # copy the files into docker
 COPY tls-server-batch ${WORKDIR}/tls-server-batch
 COPY tls-diff-testing ${WORKDIR}/tls-diff-testing
@@ -35,12 +36,14 @@ COPY main.sh ${WORKDIR}/main.sh
 # Setup TLS implementations (servers).
 # Download and build OpenSSL, MatrixSSL, wolfSSL, mbedTLS and BoringSSL
 # Generate test input (TLS ClientHello messages)
+# run main.sh
 RUN chmod +x main.sh \
     && cd ${WORKDIR}/tls-server-batch \
     && chmod +x *.sh \
     && cd ${WORKDIR}/tls-diff-testing/generator/macros \
-    && chmod +x *.sh
-#  run main.sh
-RUN cd ${WORKDIR} \
+    && chmod +x *.sh \
+    && cd ${WORKDIR} \
     && ./main.sh
+
+
 
